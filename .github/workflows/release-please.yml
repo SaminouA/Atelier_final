@@ -3,32 +3,26 @@ name: release-please
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
-  workflow_dispatch:
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Release Please
-        id: release
-        continue-on-error: true
-        uses: googleapis/release-please-action@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          config-file: .github/release-please-config.json
-          manifest-file: .github/release-please-manifest.json
-          target-branch: main
-      - name: Report release status
-        if: always()
+      - name: Validate release-please
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Release Please outcome: ${{ steps.release.outcome }}"
-          exit 0
+          npx --yes --quiet release-please@17.1.2 release-pr \
+            --dry-run \
+            --token="$GITHUB_TOKEN" \
+            --repo-url="$GITHUB_REPOSITORY" \
+            --target-branch=main \
+            --release-type=simple
+
+      - name: Next step
+        run: |
+          echo "Release Please is configured in dry-run mode."
+          echo "Enable Actions pull request creation to let it open release PRs."
