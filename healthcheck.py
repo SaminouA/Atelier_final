@@ -1,13 +1,12 @@
 import sys
-from urllib.error import URLError
-from urllib.request import urlopen
+import urllib.request
 
 
 def main() -> int:
     try:
-        with urlopen("http://127.0.0.1:8080/health", timeout=2) as response:
-            return 0 if response.status == 200 else 1
-    except URLError:
+        urllib.request.urlopen("http://localhost:8080/health", timeout=5)
+        return 0
+    except Exception:
         return 1
 
 

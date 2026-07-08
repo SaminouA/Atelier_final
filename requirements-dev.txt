@@ -2,7 +2,9 @@
 
 black==24.4.2
 pytest==8.2.2
+pytest-cov==5.0.0
 ruff==0.5.0
 bandit==1.8.6
 pbr==6.1.1
 pip-audit==2.7.3
+mkdocs==1.6.1

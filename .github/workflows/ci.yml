@@ -29,13 +29,68 @@ jobs:
         run: ruff check .
 
       - name: Test
-        run: pytest
+        run: pytest --cov=src --cov-report=xml --cov-fail-under=70
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
 
       - name: Security scan
         run: bandit -r src
 
       - name: Audit Python dependencies
         run: pip-audit -r requirements.txt
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [test, secrets]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    permissions:
+      contents: read
+      id-token: write
+
+    env:
+      PROJECT_ID: atelier-final-2026
+      REGION: europe-west1
+      SERVICE_NAME: todo-api-nadira-kevin
+      REPOSITORY: todo-repo-nadira-kevin
+      IMAGE_NAME: todo-api
+      VERSION: v1.0.0
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker $REGION-docker.pkg.dev --quiet
+
+      - name: Build and push image
+        run: |
+          IMAGE_SHA="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME:${{ github.sha }}"
+          IMAGE_VERSION="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME:$VERSION"
+          docker build -t "$IMAGE_SHA" -t "$IMAGE_VERSION" .
+          docker push "$IMAGE_SHA"
+          docker push "$IMAGE_VERSION"
+          echo "IMAGE=$IMAGE_VERSION" >> "$GITHUB_ENV"
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy "$SERVICE_NAME" \
+            --image "$IMAGE" \
+            --region "$REGION" \
+            --allow-unauthenticated
 
   secrets:
     runs-on: ubuntu-latest
