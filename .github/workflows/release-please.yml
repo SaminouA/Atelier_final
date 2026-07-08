@@ -5,20 +5,24 @@ on:
     branches: [main]
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - name: Run release-please
-        continue-on-error: true
-        uses: googleapis/release-please-action@v4
-        with:
-          release-type: simple
-          package-name: todo-api-nadira-kevin
-
-      - name: Release Please note
+      - name: Validate release-please
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "If release-please did not create a PR, enable GitHub Actions PR creation in repository settings."
+          npx --yes --quiet release-please@17.1.2 release-pr \
+            --dry-run \
+            --token="$GITHUB_TOKEN" \
+            --repo-url="$GITHUB_REPOSITORY" \
+            --target-branch=main \
+            --release-type=simple
+
+      - name: Next step
+        run: |
+          echo "Release Please is configured in dry-run mode."
+          echo "To let it create release PRs, enable Actions pull request creation in repository settings."
