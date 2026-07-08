@@ -5,69 +5,38 @@ __version__ = "1.0.0"
 tasks = []
 
 
-@app.route("/")
-def home():
-	return jsonify({"app": "Todo API", "status": "ok", "version": __version__})
+@app.get("/")
+def index():
+    return jsonify({"app": "Todo API", "status": "ok", "version": __version__})
 
-@app.route("/health")
+
+@app.get("/health")
 def health():
-	return jsonify({"status": "healthy"})
+    return jsonify({"status": "healthy"})
 
-@app.route("/version")
+
+@app.get("/version")
 def version():
-	return jsonify(version=__version__)
+    return jsonify({"version": __version__})
 
-@app.route("/tasks", methods=["GET"])
+
+@app.get("/tasks")
 def get_tasks():
-	return jsonify(tasks)
+    return jsonify(tasks)
 
-@app.route("/tasks", methods=["POST"])
+
+@app.post("/tasks")
 def create_task():
-	data = request.get_json(silent=True)
-	if not data or "title" not in data:
-		return jsonify({"error": "title is required"}), 400
-	task = {"id": len(tasks) + 1, "title": data["title"], "done": False}
-	tasks.append(task)
-	return jsonify(task), 201
+    data = request.get_json(silent=True)
 
-if __name__ == "__main__":
-	app.run(host="0.0.0.0", port=8080)
-from flask import Flask, jsonify, request
+    if not data or "title" not in data:
+        return jsonify({"error": "title is required"}), 400
 
-app = Flask(__name__)
-__version__ = "1.0.0"
-tasks = []
+    task = {"id": len(tasks) + 1, "title": data["title"], "done": False}
+    tasks.append(task)
 
-
-@app.route("/")
-def home():
-	return jsonify({"app": "Todo API", "status": "ok", "version": __version__})
-
-
-@app.route("/health")
-def health():
-	return jsonify({"status": "healthy"})
-
-
-@app.route("/version")
-def version():
-	return jsonify(version=__version__)
-
-
-@app.route("/tasks", methods=["GET"])
-def get_tasks():
-	return jsonify(tasks)
-
-
-@app.route("/tasks", methods=["POST"])
-def create_task():
-	data = request.get_json(silent=True)
-	if not data or "title" not in data:
-		return jsonify({"error": "title is required"}), 400
-	task = {"id": len(tasks) + 1, "title": data["title"], "done": False}
-	tasks.append(task)
-	return jsonify(task), 201
+    return jsonify(task), 201
 
 
 if __name__ == "__main__":
-	app.run(host="0.0.0.0", port=8080)
+    app.run(host="0.0.0.0", port=8080)
