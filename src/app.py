@@ -5,29 +5,29 @@ __version__ = "1.0.0"
 tasks = []
 
 
-@app.get("/")
-def index():
+@app.route("/")
+def home():
     return jsonify({"app": "Todo API", "status": "ok", "version": __version__})
 
 
-@app.get("/health")
+@app.route("/health")
 def health():
     return jsonify({"status": "healthy"})
 
 
-@app.get("/version")
+@app.route("/version")
 def version():
     return jsonify({"version": __version__})
 
 
-@app.get("/tasks")
+@app.route("/tasks", methods=["GET"])
 def get_tasks():
     return jsonify(tasks)
 
 
-@app.post("/tasks")
+@app.route("/tasks", methods=["POST"])
 def create_task():
-    data = request.get_json(silent=True)
+    data = request.get_json()
 
     if not data or "title" not in data:
         return jsonify({"error": "title is required"}), 400
