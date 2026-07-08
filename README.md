@@ -48,3 +48,12 @@ Le projet contient un workflow GitHub Actions pour :
 - Bandit
 - pip-audit
 - GitLeaks
+
+## Déploiement Cloud Run
+
+Le workflow de déploiement automatique est défini dans [.github/workflows/cd.yml](.github/workflows/cd.yml).
+Il publie l’image Docker dans Artifact Registry puis déploie l’application sur Cloud Run quand la CI réussit sur `main`.
+
+## Releases
+
+La gestion des releases est préparée avec Release Please via [.github/workflows/release-please.yml](.github/workflows/release-please.yml).
