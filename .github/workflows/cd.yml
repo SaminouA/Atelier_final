@@ -9,36 +9,57 @@ on:
 
 jobs:
   deploy:
-    if: ${{ (github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch') && secrets.GCP_SA_KEY != '' && secrets.GCP_PROJECT_ID != '' && secrets.GCP_REGION != '' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write
+
+    env:
+      PROJECT_ID: tp9-demo-2026
+      REGION: europe-west1
+      SERVICE_NAME: todo-api-nadira-kevin
+      REPOSITORY: todo-repo-nadira-kevin
+      IMAGE_NAME: todo-api
+      GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
 
     steps:
+      - name: Skip deployment when GCP_SA_KEY is missing
+        if: env.GCP_SA_KEY == ''
+        run: echo "GCP_SA_KEY is not configured; skipping deployment."
+
       - uses: actions/checkout@v4
+        if: env.GCP_SA_KEY != ''
 
       - id: auth
+        if: env.GCP_SA_KEY != ''
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          credentials_json: ${{ env.GCP_SA_KEY }}
 
       - name: Set up Cloud SDK
+        if: env.GCP_SA_KEY != ''
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Configure Docker for Artifact Registry
-        run: gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev --quiet
+        if: env.GCP_SA_KEY != ''
+        run: gcloud auth configure-docker $REGION-docker.pkg.dev --quiet
 
       - name: Build and push image
+        if: env.GCP_SA_KEY != ''
         run: |
-          docker build -t ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/todo-repo-nadira-kevin/todo-api:latest .
-          docker push ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/todo-repo-nadira-kevin/todo-api:latest
+          IMAGE_SHA="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME:${{ github.sha }}"
+          IMAGE_LATEST="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME:latest"
+          docker build -t "$IMAGE_SHA" -t "$IMAGE_LATEST" .
+          docker push "$IMAGE_SHA"
+          docker push "$IMAGE_LATEST"
+          echo "IMAGE=$IMAGE_SHA" >> "$GITHUB_ENV"
 
       - name: Deploy to Cloud Run
+        if: env.GCP_SA_KEY != ''
         run: |
-          gcloud run deploy todo-api-nadira-kevin \
-            --image=${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/todo-repo-nadira-kevin/todo-api:latest \
-            --region=${{ secrets.GCP_REGION }} \
+          gcloud run deploy "$SERVICE_NAME" \
+            --image="$IMAGE" \
+            --region="$REGION" \
             --platform=managed \
             --allow-unauthenticated \
-            --project=${{ secrets.GCP_PROJECT_ID }}
+            --project="$PROJECT_ID"
