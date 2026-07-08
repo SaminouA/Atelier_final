@@ -1,57 +1,36 @@
 # todo-api-nadira-kevin
 
-[![CI](https://github.com/SaminouA/Atelier_final/actions/workflows/ci.yml/badge.svg)](https://github.com/SaminouA/Atelier_final/actions/workflows/ci.yml)
-[![Docs](https://github.com/SaminouA/Atelier_final/actions/workflows/pages.yml/badge.svg)](https://github.com/SaminouA/Atelier_final/actions/workflows/pages.yml)
-[![Release Please](https://github.com/SaminouA/Atelier_final/actions/workflows/release-please.yml/badge.svg)](https://github.com/SaminouA/Atelier_final/actions/workflows/release-please.yml)
+API Flask simple pour gérer une liste de tâches en mémoire.
 
-API Flask de gestion de taches pour l'atelier final DevOps.
+## Fonctionnalités
 
-## Ressources
+- `GET /` : informations sur l'application
+- `GET /health` : vérification de santé
+- `GET /version` : version de l'application
+- `GET /tasks` : lister les tâches
+- `POST /tasks` : créer une tâche
 
-- Depot GitHub : `todo-api-nadira-kevin`
-- Service Cloud Run : `todo-api-nadira-kevin`
-- Depot Artifact Registry : `todo-repo-nadira-kevin`
-- Projet GCP : `atelier-final-2026`
-- Region : `europe-west1`
-
-## Installation
+## Installation locale
 
 ```bash
-python -m pip install -r requirements-dev.txt
+python -m venv .venv
+source .venv/bin/activate  # Linux/macOS
+.venv\Scripts\activate     # Windows
+pip install -r requirements-dev.txt
 ```
 
-## Lancer en local
+## Exécution
 
 ```bash
 python -m src.app
 ```
 
-L'API ecoute sur `http://127.0.0.1:8080`.
+L'application écoute ensuite sur `http://127.0.0.1:8000`.
 
-## Routes
-
-- `GET /`
-- `GET /health`
-- `GET /version`
-- `GET /tasks`
-- `POST /tasks`
-
-Exemple de creation de tache :
+## Tests
 
 ```bash
-curl -X POST http://127.0.0.1:8080/tasks \
-  -H "Content-Type: application/json" \
-  -d "{\"title\":\"Faire la CI\"}"
-```
-
-## Qualite et tests
-
-```bash
-black --check .
-ruff check .
-pytest --cov=src --cov-report=xml --cov-fail-under=70
-bandit -r src
-pip-audit -r requirements.txt
+pytest -q
 ```
 
 ## Docker
@@ -60,21 +39,21 @@ pip-audit -r requirements.txt
 docker compose up --build
 ```
 
-## Deploiement Cloud Run
+## CI/CD
 
-Le workflow CI/CD deploie automatiquement sur Cloud Run apres un push sur `main`
-si la CI est verte et si les secrets GitHub suivants sont configures :
+Le projet contient un workflow GitHub Actions pour :
+- Black
+- Ruff
+- pytest avec couverture
+- Bandit
+- pip-audit
+- GitLeaks
 
-- `GCP_WORKLOAD_IDENTITY_PROVIDER`
-- `GCP_SERVICE_ACCOUNT`
+## Déploiement Cloud Run
 
-L'image est publiee dans Artifact Registry avec le tag SemVer `v1.0.0` et le SHA
-du commit.
+Le workflow de déploiement automatique est défini dans [.github/workflows/cd.yml](.github/workflows/cd.yml).
+Il publie l’image Docker dans Artifact Registry puis déploie l’application sur Cloud Run quand la CI réussit sur `main`.
 
-## Contribution
+## Releases
 
-Voir [CONTRIBUTING.md](CONTRIBUTING.md).
-
-## Licence
-
-MIT, voir [LICENSE](LICENSE).
+La gestion des releases est préparée avec Release Please via [.github/workflows/release-please.yml](.github/workflows/release-please.yml).

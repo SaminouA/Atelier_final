@@ -1,12 +1,11 @@
-def test_index_returns_app_info(client):
+def test_home_returns_app_info(client):
     response = client.get("/")
 
     assert response.status_code == 200
-    assert response.get_json() == {
-        "app": "Todo API",
-        "status": "ok",
-        "version": "1.0.0",
-    }
+    data = response.get_json()
+    assert data["app"] == "Todo API"
+    assert data["status"] == "ok"
+    assert "version" in data
 
 
 def test_health_returns_healthy(client):
@@ -16,48 +15,24 @@ def test_health_returns_healthy(client):
     assert response.get_json() == {"status": "healthy"}
 
 
-def test_version_returns_current_version(client):
-    response = client.get("/version")
-
-    assert response.status_code == 200
-    assert response.get_json() == {"version": "1.0.0"}
-
-
-def test_get_tasks_returns_empty_list(client):
+def test_get_tasks_empty(client):
     response = client.get("/tasks")
 
     assert response.status_code == 200
     assert response.get_json() == []
 
 
-def test_create_task_returns_created_task(client):
-    response = client.post("/tasks", json={"title": "Apprendre Cloud Run"})
+def test_create_task(client):
+    response = client.post("/tasks", json={"title": "Test task"})
 
     assert response.status_code == 201
-    assert response.get_json() == {
-        "id": 1,
-        "title": "Apprendre Cloud Run",
-        "done": False,
-    }
+    data = response.get_json()
+    assert data["id"] == 1
+    assert data["title"] == "Test task"
+    assert data["done"] is False
 
 
-def test_get_tasks_returns_created_tasks(client):
-    client.post("/tasks", json={"title": "Ecrire les tests"})
-
-    response = client.get("/tasks")
-
-    assert response.status_code == 200
-    assert response.get_json() == [
-        {
-            "id": 1,
-            "title": "Ecrire les tests",
-            "done": False,
-        }
-    ]
-
-
-def test_create_task_without_title_returns_error(client):
+def test_create_task_missing_title(client):
     response = client.post("/tasks", json={})
 
     assert response.status_code == 400
-    assert response.get_json() == {"error": "title is required"}

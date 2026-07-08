@@ -1,8 +1,10 @@
 services:
-  api:
+  app:
     build: .
     ports:
-      - "8080:8080"
+      - "8000:8000"
+    environment:
+      - PORT=8000
     healthcheck:
       test: ["CMD", "python", "healthcheck.py"]
       interval: 30s

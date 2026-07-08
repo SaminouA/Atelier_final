@@ -1,28 +1,20 @@
-name: Release Please
+name: release-please
 
 on:
   push:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - name: Validate release-please
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          npx --yes --quiet release-please@17.1.2 release-pr \
-            --dry-run \
-            --token="$GITHUB_TOKEN" \
-            --repo-url="$GITHUB_REPOSITORY" \
-            --target-branch=main \
-            --release-type=simple
-
-      - name: Next step
-        run: |
-          echo "Release Please is configured in dry-run mode."
-          echo "To let it create release PRs, enable Actions pull request creation in repository settings."
+      - uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: .release-please-config.json
+          manifest-file: .release-please-manifest.json
+          target-branch: main

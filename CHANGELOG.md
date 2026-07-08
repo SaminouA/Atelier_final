@@ -1,7 +1,8 @@
 # Changelog
 
-## 1.0.0 - 2026-07-08
+## Unreleased
 
-- Add Todo API Flask routes.
-- Add pytest tests for the API.
-- Add Docker, CI, quality and security tooling.
+- Add minimal Flask Todo API
+- Add unit tests for core endpoints
+- Add CI workflow with lint, tests and security scans
+- Add Docker support and healthcheck
