@@ -3,7 +3,8 @@
   "packages": {
     ".": {
       "release-type": "simple",
-      "package-name": "todo-api-nadira-kevin"
+      "package-name": "todo-api-nadira-kevin",
+      "changelog-path": "CHANGELOG.md"
     }
   }
 }
