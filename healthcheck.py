@@ -5,7 +5,7 @@ from urllib.request import urlopen
 
 def main() -> int:
     try:
-        with urlopen("http://127.0.0.1:8000/health", timeout=2) as response:
+        with urlopen("http://127.0.0.1:8080/health", timeout=2) as response:
             return 0 if response.status == 200 else 1
     except URLError:
         return 1
