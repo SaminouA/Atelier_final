@@ -3,6 +3,9 @@ name: release-please
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -26,4 +29,6 @@ jobs:
           target-branch: main
       - name: Report release status
         if: always()
-        run: echo "Release Please outcome: ${{ steps.release.outcome }}"
+        run: |
+          echo "Release Please outcome: ${{ steps.release.outcome }}"
+          exit 0
